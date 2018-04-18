@@ -1,5 +1,5 @@
 
-
+const cTable = require('console.table');
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
@@ -20,26 +20,16 @@ connection.connect(function (err) {
 function start() {
     connection.query("SELECT * FROM products", function (err, results) {
         if (err) throw err;
-        console.log(results)
+        console.log("\n\n")
+        console.table(results)
+        console.log("\n\n")
         inquirer
             .prompt([
                 {
                     name: "id_number",
                     type: "input",
-                    message: function () {
-                        var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push(results[i]);
-                        }
-                        return choiceArray;
-                    },
                     message: "Which item would you like to buy? (please give the item_id number)"
                 },
-                // {
-                //     name: "id_number",
-                //     type: "input",
-                //     message: "What is the id of the prodcuct you would like to buy?",
-                // },
                 {
                     name: "quantity",
                     type: "input",
@@ -47,7 +37,6 @@ function start() {
 
                 }])
             .then(function (answer) {
-                console.log(answer)
                 query(answer.id_number, answer.quantity);
             });
     });
@@ -57,9 +46,6 @@ function start() {
 function query(product, userQuery) {
 
     connection.query("SELECT * FROM products WHERE item_id =" + product + "", function (err, res) {
-        console.log(res[0].stock_quantity);
-        console.log(userQuery);
-
         if (res[0].stock_quantity > userQuery) {
             connection.query(
                 "UPDATE products SET ? WHERE ?",
@@ -78,14 +64,14 @@ function query(product, userQuery) {
                         endConnection();
                     };
                 })
-        }else {
-        console.log("not enough inventory, sorry!");
-        endConnection();
+        } else {
+            console.log("\n\n\nNot enough inventory currently, please select a lower quantity!");
+            start();
         }
-    }          //   else console.log("Out of stock");
+    }
     )
 };
 
-function endConnection(){
+function endConnection() {
     connection.end();
 }
